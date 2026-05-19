@@ -1,61 +1,63 @@
 const express = require("express");
-const Stripe = require("stripe");
 const cors = require("cors");
-
-const stripe = Stripe("YOUR_STRIPE_SECRET");
+const Stripe = require("stripe");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+const stripe = Stripe("sk_test_51RYoI7Rw44i4QeFjYj4X4u1LxYv7X7v6M6c5M0QjQh3wM5L7Qn6Xx2B7xQx0WmR");
+
 app.post("/create-checkout-session", async (req, res) => {
 
-      const session = await stripe.checkout.sessions.create({
+  try {
 
-            payment_method_types: ["card"],
+    const session = await stripe.checkout.sessions.create({
 
-                mode: "subscription",
+      payment_method_types: ["card"],
 
-                    line_items: [{
+      mode: "subscription",
 
-                              price_data: {
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
 
-                                        currency: "usd",
+            product_data: {
+              name: "AI Trading Premium"
+            },
 
-                                                product_data: {
-                                                              name: "AI Trading Premium"
-                                                },
+            unit_amount: 2000,
 
-                                                        unit_amount: 1000,
+            recurring: {
+              interval: "month"
+            }
+          },
 
-                                                                recurring: {
-                                                                              interval: "month"
-                                                                }
+          quantity: 1
+        }
+      ],
 
-                              },
+      success_url: "https://google.com",
+      cancel_url: "https://google.com"
 
-                                    quantity: 1
+    });
 
-                    }],
+    res.json({
+      url: session.url
+    });
 
-                        success_url: "https://your-site.com/success",
+  } catch (err) {
 
-                            cancel_url: "https://your-site.com/cancel"
+    res.status(500).json({
+      error: err.message
+    });
 
-      });
-
-        res.json({
-                url: session.url
-        });
+  }
 
 });
 
-app.listen(3000, () => console.log("Server running"));
-        })
-                                                                }
-                                                }
-                              }
-                    }]
-      })
-})
+app.listen(3000, () => {
+  console.log("Server running");
+});
